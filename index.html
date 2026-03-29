@@ -3,135 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>სკოლა №26 — მართვის სისტემა</title>
+<title>სკოლა №26 — Cloud მართვა</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  // === აქ ჩასვი შენი Supabase მონაცემები ===
+  // === აქ ჩასვი შენი მონაცემები (ბრჭყალები არ წაშალო!) ===
   const SUPABASE_URL = 'https://xvgidwsbyofptozwsohf.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Z2lkd3NieW9mcHRvendzb2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mjc4MTEsImV4cCI6MjA5MDMwMzgxMX0.GS2bzmqxsCyFIzIOqfyZki-9AVVp7s3OCBk22TFwszY';
+  
+  // კავშირის დამყარება
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 </script>
 
 <style>
-/* 1. შენი ორიგინალი დიზაინის ყველა სტილი (CSS) */
+/* ბაზისური დიზაინი (რომ "Login" ეკრანი ლამაზი იყოს) */
 :root {
-  --bg:#0f1117;--surface:#181c27;--surface2:#1e2336;--surface3:#242840;
-  --border:#2e3352;--accent:#4f8ef7;--accent2:#7c5cfc;--accent3:#f7c948;
-  --green:#3ecf8e;--red:#f76f6f;--pink:#f76fb0;--text:#e8eaf6;
-  --text2:#8892b0;--text3:#4a5270;--boy:#4f8ef7;--girl:#f76fb0;
-  --shadow:0 4px 24px rgba(0,0,0,0.4);--radius:12px;--radius-sm:8px;
+  --bg:#0f1117; --surface:#181c27; --surface2:#1e2336;
+  --border:#2e3352; --accent:#4f8ef7; --text:#e8eaf6; --red:#f76f6f;
+  --radius:12px; --radius-sm:8px;
 }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Georgian', sans-serif; }
+body { background: var(--bg); color: var(--text); height: 100vh; display: flex; align-items: center; justify-content: center; }
 
-/* Login Overlay Styles */
-#auth-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: var(--bg); display: flex; align-items: center; justify-content: center;
-  z-index: 10000;
-}
-.auth-card {
+#auth-screen {
   background: var(--surface); padding: 40px; border-radius: var(--radius);
-  border: 1px solid var(--border); width: 100%; max-width: 350px; text-align: center;
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border); width: 360px; text-align: center;
 }
-.auth-card h2 { margin-bottom: 20px; color: var(--accent); }
-.auth-card input {
+.auth-input {
   width: 100%; padding: 12px; margin: 10px 0; background: var(--surface2);
   border: 1px solid var(--border); color: white; border-radius: var(--radius-sm); outline: none;
 }
-.auth-card button {
-  width: 100%; padding: 12px; margin-top: 15px; background: var(--accent);
-  border: none; color: white; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600;
+.auth-btn {
+  width: 100%; padding: 12px; background: var(--accent); border: none;
+  color: white; border-radius: var(--radius-sm); cursor: pointer; font-weight: bold; margin-top: 10px;
 }
-#main-app-ui { display: none; width: 100%; }
-
-/* შენი ორიგინალი CSS-ის გაგრძელება */
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Noto Sans Georgian',sans-serif}
-body{background:var(--bg);color:var(--text);overflow:hidden;height:100vh;display:flex}
-.sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100}
-/* ... (აქ ჩაჯდება შენი ყველა დანარჩენი სტილი) ... */
+#main-app { display: none; width: 100%; height: 100%; background: var(--bg); color: white; padding: 20px; }
 </style>
 </head>
 <body>
 
-<div id="auth-overlay">
-  <div class="auth-card">
-    <h2>სკოლა №26</h2>
-    <input type="email" id="auth-email" placeholder="ელ-ფოსტა">
-    <input type="password" id="auth-pass" placeholder="პაროლი">
-    <button onclick="handleSignIn()">შესვლა</button>
-  </div>
+<div id="auth-screen">
+    <h2 style="margin-bottom: 20px;">სკოლა №26</h2>
+    <input type="email" id="emailInput" class="auth-input" placeholder="ელ-ფოსტა">
+    <input type="password" id="passInput" class="auth-input" placeholder="პაროლი">
+    <button class="auth-btn" onclick="handleSignIn()">შესვლა</button>
+    <p id="errorMsg" style="color: var(--red); font-size: 13px; margin-top: 15px;"></p>
 </div>
 
-<div id="main-app-ui">
-  <aside class="sidebar">...</aside>
-  <main class="main-content">...</main>
+<div id="main-app">
+    <h1>სისტემა ჩაიტვირთა! ✅</h1>
+    <p>თუ ამას ხედავ, ავტორიზაციამ წარმატებით გაიარა.</p>
+    <button onclick="location.reload()" style="margin-top:20px; padding: 10px;">გამოსვლა</button>
 </div>
 
 <script>
-// === მონაცემების მასივები ===
+// === მონაცემების მასივები (საწყისი მდგომარეობა) ===
 let students = [], payments = [], departments = [], teachers = [], events = [];
 
-// === LOGIN LOGIC ===
+// === ავტორიზაციის ფუნქცია ===
 async function handleSignIn() {
-  const email = document.getElementById('auth-email').value;
-  const pass = document.getElementById('auth-pass').value;
-  
-  const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pass });
-  
-  if (error) {
-    alert("შეცდომა: " + error.message);
-  } else {
-    document.getElementById('auth-overlay').style.display = 'none';
-    document.getElementById('main-app-ui').style.display = 'flex';
-    await syncFromCloud(); // შევდივართ და ეგრევე მოგვაქვს ბაზა
-  }
+    const email = document.getElementById('emailInput').value;
+    const password = document.getElementById('passInput').value;
+    const msg = document.getElementById('errorMsg');
+
+    msg.innerText = "მიმდინარეობს შემოწმება...";
+
+    try {
+        const { data, error } = await _supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            msg.innerText = "შეცდომა: " + error.message;
+        } else {
+            // თუ ყველაფერი სწორია, ვმალავთ ლოგინს და ვხსნით აპლიკაციას
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            await loadDataFromCloud();
+        }
+    } catch (err) {
+        msg.innerText = "კავშირის შეცდომა. შეამოწმე URL და Key.";
+    }
 }
 
-// === CLOUD SYNC ===
-async function syncFromCloud() {
-  const { data, error } = await _supabase
-    .from('school_configs')
-    .select('data')
-    .eq('config_name', 'main_data')
-    .single();
+// === მონაცემების წამოღება Supabase-დან ===
+async function loadDataFromCloud() {
+    const { data, error } = await _supabase
+        .from('school_configs')
+        .select('data')
+        .eq('config_name', 'main_data')
+        .single();
 
-  if (data && data.data) {
-    const cloud = data.data;
-    students = cloud.students || [];
-    payments = cloud.payments || [];
-    departments = cloud.departments || [];
-    teachers = cloud.teachers || [];
-    events = cloud.events || [];
-    
-    // მონაცემების ჩატვირთვის შემდეგ ვაახლებთ ეკრანს
-    if (typeof renderAll === "function") renderAll();
-  }
+    if (data && data.data) {
+        const cloudData = data.data;
+        students = cloudData.students || [];
+        payments = cloudData.payments || [];
+        teachers = cloudData.teachers || [];
+        departments = cloudData.departments || [];
+        events = cloudData.events || [];
+        console.log("მონაცემები ჩამოიტვირთა!");
+    }
 }
 
+// === მონაცემების შენახვა Supabase-ში ===
 async function saveData() {
-  const payload = { students, payments, departments, teachers, events };
-  
-  const { error } = await _supabase
-    .from('school_configs')
-    .upsert({ config_name: 'main_data', data: payload }, { onConflict: 'config_name' });
+    const payload = { students, payments, teachers, departments, events };
+    
+    const { error } = await _supabase
+        .from('school_configs')
+        .upsert({ 
+            config_name: 'main_data', 
+            data: payload 
+        }, { onConflict: 'config_name' });
 
-  if (error) console.error("Sync Error:", error.message);
+    if (error) console.error("შენახვისას მოხდა შეცდომა:", error.message);
 }
 
-// === შენი ორიგინალი ფუნქციების ჩაშენება ===
-// (ყველა ფუნქცია, რომელიც ადრე LocalStorage-ს იყენებდა, ახლა გამოიყენებს saveData()-ს)
-
-function addStudent(studentData) {
-    students.push(studentData);
-    saveData(); // ავტომატურად ინახება Supabase-ში
-    renderAll();
-}
-
-// ... და ასე შემდეგ ყველა ფუნქცია ...
-
+// === აქ ჩაამატე შენი ორიგინალი ფუნქციები (refreshUI და ა.შ.) ===
 </script>
 </body>
 </html>
