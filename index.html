@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  // === ჩასვი შენი მონაცემები აქ (ბრჭყალები არ წაშალო!) ===
+  // === კონფიგურაცია (მხოლოდ KEY ჩაწერე ქვემოთ) ===
   const SUPABASE_URL = 'https://xvgidwsbyofptozwsohf.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Z2lkd3NieW9mcHRvendzb2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mjc4MTEsImV4cCI6MjA5MDMwMzgxMX0.GS2bzmqxsCyFIzIOqfyZki-9AVVp7s3OCBk22TFwszY';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -24,7 +24,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Georgian', sans-serif; }
 body { background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
 
-/* Login */
+/* Login UI */
 #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 .auth-card { background: var(--surface); padding: 40px; border-radius: var(--radius); border: 1px solid var(--border); width: 350px; text-align: center; }
 .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: var(--radius-sm); outline: none; }
@@ -34,11 +34,13 @@ body { background: var(--bg); color: var(--text); height: 100vh; display: flex; 
 #main-app-content { display: none; width: 100%; height: 100%; display: flex; }
 .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
 .content { flex: 1; padding: 30px; overflow-y: auto; }
-.nav-item { padding: 12px; cursor: pointer; border-radius: var(--radius-sm); margin-bottom: 5px; }
+.nav-item { padding: 12px; cursor: pointer; border-radius: var(--radius-sm); margin-bottom: 5px; transition: 0.3s; }
 .nav-item:hover { background: var(--surface2); }
 .nav-item.active { background: var(--accent); color: white; }
 .view { display: none; }
 .view.active { display: block; }
+ul { list-style: none; margin-top: 15px; }
+li { background: var(--surface2); padding: 10px; margin-bottom: 5px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -66,40 +68,54 @@ body { background: var(--bg); color: var(--text); height: 100vh; display: flex; 
     <main class="content">
         <div id="view-dashboard" class="view active">
             <h1>მართვის პანელი</h1>
-            <p style="margin-top:20px;">მოგესალმებით, სისტემა მზად არის.</p>
-            <div id="stats-summary" style="margin-top:20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div style="background:var(--surface2); padding:20px; border-radius:var(--radius);">მოსწავლეები: <span id="stud-count">0</span></div>
-                <div style="background:var(--surface2); padding:20px; border-radius:var(--radius);">მასწავლებლები: <span id="teach-count">0</span></div>
+            <div style="margin-top:20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="background:var(--surface2); padding:20px; border-radius:var(--radius); border: 1px solid var(--border);">
+                    <p style="color:var(--accent);">მოსწავლეები</p>
+                    <h2 id="stud-count">0</h2>
+                </div>
             </div>
         </div>
 
         <div id="view-students" class="view">
             <h1>მოსწავლეების სია</h1>
-            <button class="auth-btn" style="width:auto; padding: 10px 20px;" onclick="addTestStudent()">+ ტესტ მოსწავლე</button>
-            <ul id="student-list" style="margin-top:20px;"></ul>
+            <button class="auth-btn" style="width:auto; padding: 10px 20px; margin-top:15px;" onclick="addTestStudent()">+ ტესტ მოსწავლე</button>
+            <ul id="student-list"></ul>
         </div>
     </main>
 </div>
 
 <script>
-let students = [], teachers = [];
+let students = [], teachers = [], payments = [];
+
+// === სესიის მართვა ===
+window.onload = async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (session) {
+        showApp();
+        await loadCloudData();
+    }
+};
+
+_supabase.auth.onAuthStateChange((event, session) => {
+    if (session) showApp();
+    else hideApp();
+});
 
 async function handleSignIn() {
     const email = document.getElementById('u-email').value;
     const pass = document.getElementById('u-pass').value;
-    const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pass });
-
-    if (error) {
-        document.getElementById('err').innerText = error.message;
-    } else {
-        document.getElementById('auth-overlay').style.display = 'none';
-        document.getElementById('main-app-content').style.display = 'flex';
-        await loadCloudData();
-    }
+    const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) document.getElementById('err').innerText = error.message;
 }
 
+// === CLOUD ფუნქციები ===
 async function loadCloudData() {
-    const { data, error } = await _supabase.from('school_configs').select('data').eq('config_name', 'main_data').maybeSingle();
+    const { data, error } = await _supabase
+        .from('school_configs')
+        .select('data')
+        .eq('config_name', 'main_data')
+        .maybeSingle();
+
     if (data && data.data) {
         students = data.data.students || [];
         teachers = data.data.teachers || [];
@@ -108,19 +124,26 @@ async function loadCloudData() {
 }
 
 async function saveCloudData() {
-    const payload = { students, teachers };
-    await _supabase.from('school_configs').upsert({ config_name: 'main_data', data: payload }, { onConflict: 'config_name' });
+    const { error } = await _supabase
+        .from('school_configs')
+        .upsert({ 
+            config_name: 'main_data', 
+            data: { students, teachers, payments } 
+        });
+
+    if (error) console.error("Error saving:", error.message);
 }
 
+// === ინტერფეისის ფუნქციები ===
 function renderAll() {
-    document.getElementById('stud-count').innerText = students.length;
-    document.getElementById('teach-count').innerText = teachers.length;
     const list = document.getElementById('student-list');
-    list.innerHTML = students.map(s => `<li>${s.name}</li>`).join('');
+    if (list) list.innerHTML = students.map(s => `<li>${s.name}</li>`).join('');
+    const count = document.getElementById('stud-count');
+    if (count) count.innerText = students.length;
 }
 
 function addTestStudent() {
-    students.push({ name: "ახალი მოსწავლე " + (students.length + 1) });
+    students.push({ name: "მოსწავლე " + (students.length + 1) });
     renderAll();
     saveCloudData();
 }
@@ -130,6 +153,16 @@ function showView(id) {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.getElementById('view-' + id).classList.add('active');
     event.currentTarget.classList.add('active');
+}
+
+function showApp() {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('main-app-content').style.display = 'flex';
+}
+
+function hideApp() {
+    document.getElementById('auth-overlay').style.display = 'flex';
+    document.getElementById('main-app-content').style.display = 'none';
 }
 
 async function logout() {
