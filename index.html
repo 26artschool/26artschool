@@ -1,36 +1,122 @@
 <!DOCTYPE html>
 <html lang="ka">
 <head>
-    <meta charset="UTF-8">
-    <title>School Management</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>სკოლა №26 — Cloud მართვის სისტემა</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // === აქ ჩასვი შენი Supabase მონაცემები ===
+  const SUPABASE_URL = https://xvgidwsbyofptozwsohf.supabase.co;
+  const SUPABASE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Z2lkd3NieW9mcHRvendzb2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mjc4MTEsImV4cCI6MjA5MDMwMzgxMX0.GS2bzmqxsCyFIzIOqfyZki-9AVVp7s3OCBk22TFwszY;
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+
+<style>
+/* 1. შენი ორიგინალი დიზაინის ყველა სტილი (CSS) */
+:root {
+  --bg:#0f1117;--surface:#181c27;--surface2:#1e2336;--surface3:#242840;
+  --border:#2e3352;--accent:#4f8ef7;--accent2:#7c5cfc;--accent3:#f7c948;
+  --green:#3ecf8e;--red:#f76f6f;--pink:#f76fb0;--text:#e8eaf6;
+  --text2:#8892b0;--text3:#4a5270;--boy:#4f8ef7;--girl:#f76fb0;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);--radius:12px;--radius-sm:8px;
+}
+/* ავტორიზაციის ეკრანის სტილი */
+#auth-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--bg); display: flex; align-items: center; justify-content: center;
+  z-index: 10000;
+}
+.auth-card {
+  background: var(--surface); padding: 40px; border-radius: var(--radius);
+  border: 1px solid var(--border); width: 100%; max-width: 350px; text-align: center;
+  box-shadow: var(--shadow);
+}
+.auth-card h2 { margin-bottom: 20px; color: var(--accent); }
+.auth-card input {
+  width: 100%; padding: 12px; margin: 10px 0; background: var(--surface2);
+  border: 1px solid var(--border); color: white; border-radius: var(--radius-sm); outline: none;
+}
+.auth-card button {
+  width: 100%; padding: 12px; margin-top: 15px; background: var(--accent);
+  border: none; color: white; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600;
+}
+.auth-card button:hover { background: var(--accent2); }
+#main-app-ui { display: none; flex-direction: row; }
+
+/* შენი ფაილიდან გადმოტანილი დანარჩენი CSS... (შემოკლებულია) */
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Noto Sans Georgian',sans-serif}
+body{background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh;}
+/* ... აქ იქნება შენი მთლიანი <style> ბლოკი ... */
+</style>
 </head>
 <body>
 
-    <h1>მოსწავლის რეგისტრაცია</h1>
-    <input type="text" id="studentName" placeholder="სახელი და გვარი">
-    <button onclick="saveToSupabase()">შენახვა</button>
+<div id="auth-overlay">
+  <div class="auth-card">
+    <h2>შესვლა</h2>
+    <input type="email" id="auth-email" placeholder="ელ-ფოსტა">
+    <input type="password" id="auth-pass" placeholder="პაროლი">
+    <button onclick="handleSignIn()">ავტორიზაცია</button>
+  </div>
+</div>
 
-    <script>
-        // ჩასვი შენი მონაცემები აქ:
-        const SUPABASE_URL = 'https://xvgidwsbyofptozwsohf.supabase.co'
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Z2lkd3NieW9mcHRvendzb2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mjc4MTEsImV4cCI6MjA5MDMwMzgxMX0.GS2bzmqxsCyFIzIOqfyZki-9AVVp7s3OCBk22TFwszY'
-        
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+<div id="main-app-ui" style="display:none; width: 100%;">
+  <main class="main-content" style="flex:1; padding: 20px;">
+     <h1>მოგესალმებით, სისტემა ჩაიტვირთა!</h1>
+     </main>
+</div>
 
-        async function saveToSupabase() {
-            const name = document.getElementById('studentName').value;
-            
-            const { data, error } = await _supabase
-                .from('test_data') // გახსოვს, წინა ნაბიჯზე რომ შევქმენით ცხრილი?
-                .insert([{ name: name }])
+<script>
+// === ლოგიკა ===
+let students = [], payments = [], departments = [], teachers = [];
 
-            if (error) {
-                alert("შეცდომა: " + error.message);
-            } else {
-                alert("მონაცემი წარმატებით შეინახა!");
-            }
-        }
-    </script>
+async function handleSignIn() {
+  const email = document.getElementById('auth-email').value;
+  const password = document.getElementById('auth-pass').value;
+
+  const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    alert("ავტორიზაცია ვერ მოხერხდა: " + error.message);
+  } else {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('main-app-ui').style.display = 'flex';
+    await syncFromCloud();
+  }
+}
+
+async function syncFromCloud() {
+  const { data, error } = await _supabase
+    .from('school_configs')
+    .select('data')
+    .eq('config_name', 'main_data')
+    .single();
+
+  if (data && data.data) {
+    const cloud = data.data;
+    students = cloud.students || [];
+    payments = cloud.payments || [];
+    departments = cloud.departments || [];
+    teachers = cloud.teachers || [];
+    // აქ გამოიძახე შენი renderAll() ფუნქცია
+    console.log("მონაცემები ჩამოიტვირთა!");
+  }
+}
+
+async function saveData() {
+  const payload = { students, payments, departments, teachers };
+  const { error } = await _supabase
+    .from('school_configs')
+    .upsert({ config_name: 'main_data', data: payload }, { onConflict: 'config_name' });
+
+  if (error) console.error("Cloud Sync Error:", error.message);
+}
+
+// === აქ ჩაამატე შენი ყველა დანარჩენი JS ფუნქცია (addStudent, renderAll და ა.შ.) ===
+</script>
 </body>
 </html>
