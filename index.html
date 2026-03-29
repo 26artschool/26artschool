@@ -3,54 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>სკოლა №26 — მართვის პანელი</title>
+<title>სკოლა №26 — Cloud მართვა</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  // === CLOUD CONFIG ===
+  // === CONFIG ===
   const SUPABASE_URL = 'https://xvgidwsbyofptozwsohf.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Z2lkd3NieW9mcHRvendzb2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mjc4MTEsImV4cCI6MjA5MDMwMzgxMX0.GS2bzmqxsCyFIzIOqfyZki-9AVVp7s3OCBk22TFwszY';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 </script>
 
 <style>
+/* === შენი ორიგინალი "ლურჯი" დიზაინი === */
 :root {
-  --bg:#0f1117; --surface:#181c27; --surface2:#1e2336;
-  --border:#2e3352; --accent:#4f8ef7; --green:#3ecf8e; --red:#f76f6f;
-  --text:#e8eaf6; --text2:#8892b0;
-  --radius:12px; --radius-sm:8px;
+  --bg: #0f1117; --surface: #181c27; --surface2: #1e2336;
+  --border: #2e3352; --accent: #4f8ef7; --text: #e8eaf6;
+  --text2: #8892b0; --green: #3ecf8e; --red: #f76f6f;
+  --radius: 12px; --shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Georgian', sans-serif; }
 body { background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
 
-/* Login */
+/* Login Overlay */
 #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.auth-card { background: var(--surface); padding: 40px; border-radius: var(--radius); border: 1px solid var(--border); width: 350px; text-align: center; }
-.auth-input { width: 100%; padding: 12px; margin: 10px 0; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: var(--radius-sm); outline: none; }
+.auth-card { background: var(--surface); padding: 40px; border-radius: var(--radius); border: 1px solid var(--border); width: 350px; text-align: center; box-shadow: var(--shadow); }
+.auth-input { width: 100%; padding: 12px; margin: 10px 0; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: 8px; outline: none; }
 
 /* Sidebar */
 .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-.nav-item { padding: 14px 20px; cursor: pointer; color: var(--text2); transition: 0.3s; border-left: 3px solid transparent; }
+.sidebar-header { padding: 30px; font-size: 22px; font-weight: 700; color: var(--accent); }
+.nav-item { padding: 15px 30px; cursor: pointer; color: var(--text2); transition: 0.3s; display: flex; align-items: center; gap: 10px; }
 .nav-item:hover { background: var(--surface2); color: white; }
-.nav-item.active { background: var(--surface2); color: white; border-left-color: var(--accent); }
+.nav-item.active { background: var(--surface2); color: white; border-left: 4px solid var(--accent); }
 
-/* Main UI */
-.main-content { flex: 1; padding: 40px; overflow-y: auto; }
-.view { display: none; }
+/* Main Content */
+.main-content { flex: 1; padding: 40px; overflow-y: auto; background: radial-gradient(circle at top right, #1a1f35, #0f1117); }
+.view { display: none; animation: fadeIn 0.4s ease; }
 .view.active { display: block; }
-.card { background: var(--surface); padding: 25px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 25px; }
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Table Style */
-.data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-.data-table th { text-align: left; padding: 12px; color: var(--text2); border-bottom: 1px solid var(--border); }
-.data-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+/* Cards & Stats */
+.card { background: var(--surface); padding: 25px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 25px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; }
+.stat-card h3 { color: var(--text2); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+.stat-card h2 { font-size: 32px; margin-top: 10px; color: var(--accent); }
+
+/* Tables */
+.data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.data-table th { text-align: left; padding: 15px; color: var(--text2); font-size: 13px; border-bottom: 1px solid var(--border); }
+.data-table td { padding: 15px; border-bottom: 1px solid var(--border); color: var(--text); }
+.data-table tr:hover { background: rgba(255,255,255,0.02); }
 
 /* Buttons */
-.btn { padding: 10px 20px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
-.btn-primary { background: var(--accent); color: white; }
+.btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(79, 142, 247, 0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 142, 247, 0.4); }
 .btn-danger { background: rgba(247, 111, 111, 0.1); color: var(--red); border: 1px solid var(--red); }
 </style>
 </head>
@@ -61,29 +71,37 @@ body { background: var(--bg); color: var(--text); height: 100vh; display: flex; 
     <h2 style="margin-bottom:20px;">სკოლა №26</h2>
     <input type="email" id="u-email" class="auth-input" placeholder="ელ-ფოსტა">
     <input type="password" id="u-pass" class="auth-input" placeholder="პაროლი">
-    <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="handleSignIn()">შესვლა</button>
+    <button class="btn btn-primary" style="width:100%; margin-top:10px; justify-content:center;" onclick="handleSignIn()">შესვლა</button>
     <p id="err" style="color:var(--red); font-size:12px; margin-top:10px;"></p>
   </div>
 </div>
 
 <div id="main-app-content" style="display:none; width:100%;">
     <aside class="sidebar">
-        <div style="padding:30px; font-weight:700; font-size:1.2rem;">🏫 სკოლა №26</div>
+        <div class="sidebar-header">🏫 სკოლა №26</div>
         <nav style="flex:1;">
             <div class="nav-item active" onclick="showView('dashboard')">📊 მთავარი</div>
             <div class="nav-item" onclick="showView('teachers')">👨‍🏫 მასწავლებლები</div>
             <div class="nav-item" onclick="showView('students')">🎓 მოსწავლეები</div>
             <div class="nav-item" onclick="showView('finance')">💰 ფინანსები</div>
         </nav>
-        <div style="padding:20px;"><button class="btn btn-danger" style="width:100%;" onclick="logout()">🚪 გამოსვლა</button></div>
+        <div style="padding:25px;">
+            <button class="btn btn-danger" style="width:100%; justify-content:center;" onclick="logout()">🚪 გამოსვლა</button>
+        </div>
     </aside>
 
     <main class="main-content">
         <div id="view-dashboard" class="view active">
-            <h1>მართვის პანელი</h1>
-            <div class="stat-grid" style="margin-top:25px;">
-                <div class="card"><h3>მოსწავლეები</h3><h2 id="count-s" style="color:var(--accent); margin-top:10px;">0</h2></div>
-                <div class="card"><h3>მასწავლებლები</h3><h2 id="count-t" style="color:var(--green); margin-top:10px;">0</h2></div>
+            <h1 style="margin-bottom:30px;">მართვის პანელი</h1>
+            <div class="stat-grid">
+                <div class="card stat-card"><h3>მოსწავლეები</h3><h2 id="count-s">0</h2></div>
+                <div class="card stat-card"><h3>მასწავლებლები</h3><h2 id="count-t" style="color:var(--green)">0</h2></div>
+                <div class="card stat-card"><h3>ბიუჯეტი</h3><h2 style="color:var(--text)">0 ₾</h2></div>
+            </div>
+            
+            <div class="card" style="margin-top:30px;">
+                <h3>ბოლო აქტივობა</h3>
+                <p style="color:var(--text2); margin-top:15px;">სისტემა მუშაობს გამართულად.</p>
             </div>
         </div>
 
@@ -92,7 +110,7 @@ body { background: var(--bg); color: var(--text); height: 100vh; display: flex; 
                 <h1>მასწავლებლები</h1>
                 <button class="btn btn-primary" onclick="addTeacher()">+ დამატება</button>
             </div>
-            <div class="card" style="margin-top:20px;">
+            <div class="card" style="margin-top:25px;">
                 <table class="data-table">
                     <thead><tr><th>სახელი</th><th>საგანი</th><th>მოქმედება</th></tr></thead>
                     <tbody id="t-body"></tbody>
@@ -105,7 +123,7 @@ body { background: var(--bg); color: var(--text); height: 100vh; display: flex; 
                 <h1>მოსწავლეების რეესტრი</h1>
                 <button class="btn btn-primary" onclick="addStudent()">+ ახალი მოსწავლე</button>
             </div>
-            <div class="card" style="margin-top:20px;">
+            <div class="card" style="margin-top:25px;">
                 <table class="data-table">
                     <thead><tr><th>სახელი</th><th>სტატუსი</th><th>მოქმედება</th></tr></thead>
                     <tbody id="s-body"></tbody>
@@ -118,7 +136,7 @@ body { background: var(--bg); color: var(--text); height: 100vh; display: flex; 
 <script>
 let students = [], teachers = [], payments = [];
 
-// === SESSION & AUTH ===
+// === AUTH & SESSION ===
 window.onload = async () => {
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) { showApp(); await loadCloudData(); }
@@ -153,7 +171,7 @@ async function saveCloudData() {
     });
 }
 
-// === LOGIC ===
+// === RENDER ===
 function renderAll() {
     document.getElementById('count-s').innerText = students.length;
     document.getElementById('count-t').innerText = teachers.length;
@@ -167,30 +185,22 @@ function renderAll() {
     `).join('');
 }
 
+// === ACTIONS ===
 function addTeacher() {
-    const name = prompt("მასწავლებლის სახელი:");
+    const name = prompt("სახელი და გვარი:");
     const sub = prompt("საგანი:");
     if(name && sub) { teachers.push({name, subject:sub}); renderAll(); saveCloudData(); }
 }
 
 function addStudent() {
-    const name = prompt("მოსწავლის სახელი:");
+    const name = prompt("მოსწავლის სახელი და გვარი:");
     if(name) { students.push({name}); renderAll(); saveCloudData(); }
 }
 
-function delT(i) { teachers.splice(i, 1); renderAll(); saveCloudData(); }
-function delS(i) { students.splice(i, 1); renderAll(); saveCloudData(); }
+function delT(i) { if(confirm('წავშალო?')){ teachers.splice(i, 1); renderAll(); saveCloudData(); } }
+function delS(i) { if(confirm('წავშალო?')){ students.splice(i, 1); renderAll(); saveCloudData(); } }
 
 function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.getElementById('view-' + id).classList.add('active');
-    event.currentTarget.classList.add('active');
-}
-
-function showApp() { document.getElementById('auth-overlay').style.display='none'; document.getElementById('main-app-content').style.display='flex'; }
-function hideApp() { document.getElementById('auth-overlay').style.display='flex'; document.getElementById('main-app-content').style.display='none'; }
-async function logout() { await _supabase.auth.signOut(); location.reload(); }
-</script>
-</body>
-</html>
+    document.getElementById('view
