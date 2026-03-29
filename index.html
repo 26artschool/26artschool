@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>სკოლა №26 — მართვის სისტემა (Cloud)</title>
+<title>სკოლა №26 — Cloud მართვა</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,28 +16,29 @@
 </script>
 
 <style>
-/* === შენი ორიგინალი დიზაინის ყველა სტილი (CSS) === */
 :root {
-  --bg:#0f1117;--surface:#181c27;--surface2:#1e2336;--surface3:#242840;
-  --border:#2e3352;--accent:#4f8ef7;--accent2:#7c5cfc;--accent3:#f7c948;
-  --green:#3ecf8e;--red:#f76f6f;--pink:#f76fb0;--text:#e8eaf6;
-  --text2:#8892b0;--text3:#4a5270;--boy:#4f8ef7;--girl:#f76fb0;
-  --shadow:0 4px 24px rgba(0,0,0,0.4);--radius:12px;--radius-sm:8px;
+  --bg:#0f1117; --surface:#181c27; --surface2:#1e2336;
+  --border:#2e3352; --accent:#4f8ef7; --text:#e8eaf6; --red:#f76f6f;
+  --radius:12px; --radius-sm:8px;
 }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans Georgian', sans-serif; }
+body { background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
 
-/* Login Overlay */
+/* Login */
 #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.auth-card { background: var(--surface); padding: 40px; border-radius: var(--radius); border: 1px solid var(--border); width: 350px; text-align: center; box-shadow: var(--shadow); }
+.auth-card { background: var(--surface); padding: 40px; border-radius: var(--radius); border: 1px solid var(--border); width: 350px; text-align: center; }
 .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: var(--surface2); border: 1px solid var(--border); color: white; border-radius: var(--radius-sm); outline: none; }
-.auth-btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; border-radius: var(--radius-sm); cursor: pointer; font-weight: bold; margin-top: 10px; }
+.auth-btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; border-radius: var(--radius-sm); cursor: pointer; font-weight: bold; }
 
-/* შენი CSS-ის გაგრძელება უცვლელად... */
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Noto Sans Georgian',sans-serif}
-body{background:var(--bg);color:var(--text);overflow:hidden;height:100vh;display:flex}
-.sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:all 0.3s ease}
-/* (აქ ჩაჯდება შენი ყველა დანარჩენი სტილი) */
-/* ... */
-/* ... */
+/* Main UI */
+#main-app-content { display: none; width: 100%; height: 100%; display: flex; }
+.sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
+.content { flex: 1; padding: 30px; overflow-y: auto; }
+.nav-item { padding: 12px; cursor: pointer; border-radius: var(--radius-sm); margin-bottom: 5px; }
+.nav-item:hover { background: var(--surface2); }
+.nav-item.active { background: var(--accent); color: white; }
+.view { display: none; }
+.view.active { display: block; }
 </style>
 </head>
 <body>
@@ -52,88 +53,89 @@ body{background:var(--bg);color:var(--text);overflow:hidden;height:100vh;display
   </div>
 </div>
 
-<div id="main-app-content" style="display:none; width:100%; height:100vh;">
+<div id="main-app-content">
     <aside class="sidebar">
-        </aside>
+        <h3 style="margin-bottom: 20px;">🏫 სკოლა №26</h3>
+        <div class="nav-item active" onclick="showView('dashboard')">📊 მთავარი</div>
+        <div class="nav-item" onclick="showView('students')">🎓 მოსწავლეები</div>
+        <div style="margin-top: auto;">
+            <button class="auth-btn" style="background:#333;" onclick="logout()">🚪 გამოსვლა</button>
+        </div>
+    </aside>
 
-    <main class="main-content">
+    <main class="content">
         <div id="view-dashboard" class="view active">
+            <h1>მართვის პანელი</h1>
+            <p style="margin-top:20px;">მოგესალმებით, სისტემა მზად არის.</p>
+            <div id="stats-summary" style="margin-top:20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="background:var(--surface2); padding:20px; border-radius:var(--radius);">მოსწავლეები: <span id="stud-count">0</span></div>
+                <div style="background:var(--surface2); padding:20px; border-radius:var(--radius);">მასწავლებლები: <span id="teach-count">0</span></div>
             </div>
+        </div>
 
-        <div id="view-teachers" class="view">
-            </div>
-
-        </main>
+        <div id="view-students" class="view">
+            <h1>მოსწავლეების სია</h1>
+            <button class="auth-btn" style="width:auto; padding: 10px 20px;" onclick="addTestStudent()">+ ტესტ მოსწავლე</button>
+            <ul id="student-list" style="margin-top:20px;"></ul>
+        </div>
+    </main>
 </div>
-<script>
-// === 1. მონაცემების საწყისი მასივები ===
-let departments = [], teachers = [], students = [], payments = [], events = [];
 
-// === 2. ავტორიზაციის ლოგიკა ===
+<script>
+let students = [], teachers = [];
+
 async function handleSignIn() {
     const email = document.getElementById('u-email').value;
     const pass = document.getElementById('u-pass').value;
-    const err = document.getElementById('err');
-    err.innerText = "მოწმდება...";
-
     const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pass });
 
     if (error) {
-        err.innerText = "შეცდომა: " + error.message;
+        document.getElementById('err').innerText = error.message;
     } else {
         document.getElementById('auth-overlay').style.display = 'none';
         document.getElementById('main-app-content').style.display = 'flex';
-        await loadData(); // მონაცემების წამოღება Cloud-იდან
+        await loadCloudData();
     }
 }
 
-// === 3. CLOUD სინქრონიზაცია ===
-async function loadData() {
-    const { data, error } = await _supabase
-        .from('school_configs')
-        .select('data')
-        .eq('config_name', 'main_data')
-        .maybeSingle();
-
+async function loadCloudData() {
+    const { data, error } = await _supabase.from('school_configs').select('data').eq('config_name', 'main_data').maybeSingle();
     if (data && data.data) {
-        const d = data.data;
-        students = d.students || [];
-        teachers = d.teachers || [];
-        payments = d.payments || [];
-        departments = d.departments || [];
-        events = d.events || [];
+        students = data.data.students || [];
+        teachers = data.data.teachers || [];
+        renderAll();
     }
-    
-    // შენი ორიგინალი ფუნქცია ეკრანის განსაახლებლად
-    if (typeof renderAll === "function") renderAll();
-    else if (typeof updateDashboardStats === "function") updateDashboardStats();
 }
 
-async function saveData() {
-    const payload = { students, teachers, payments, departments, events };
-    const { error } = await _supabase
-        .from('school_configs')
-        .upsert({ config_name: 'main_data', data: payload }, { onConflict: 'config_name' });
-    
-    if (error) console.error("Cloud შენახვის შეცდომა:", error.message);
+async function saveCloudData() {
+    const payload = { students, teachers };
+    await _supabase.from('school_configs').upsert({ config_name: 'main_data', data: payload }, { onConflict: 'config_name' });
 }
 
-// === 4. შენი ორიგინალი ფუნქციების ბლოკი ===
-// (აქ ჩაამატე შენი ყველა ფუნქცია: addStudent, deleteTeacher და ა.შ.)
-// მნიშვნელოვანი: ყველგან სადაც გაქვს students.push() ან მსგავსი ცვლილება,
-// ბოლოში დაუმატე saveData(); რომ Cloud-ში აისახოს.
+function renderAll() {
+    document.getElementById('stud-count').innerText = students.length;
+    document.getElementById('teach-count').innerText = teachers.length;
+    const list = document.getElementById('student-list');
+    list.innerHTML = students.map(s => `<li>${s.name}</li>`).join('');
+}
 
-function showView(viewId) {
+function addTestStudent() {
+    students.push({ name: "ახალი მოსწავლე " + (students.length + 1) });
+    renderAll();
+    saveCloudData();
+}
+
+function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + viewId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    event.currentTarget.classList.add('active');
 }
 
 async function logout() {
     await _supabase.auth.signOut();
     location.reload();
 }
-
-// ჩაამატე აქ შენი დანარჩენი ლოგიკა...
 </script>
 </body>
 </html>
