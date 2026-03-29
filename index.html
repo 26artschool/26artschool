@@ -23,13 +23,13 @@
         #auth-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .auth-card { background: var(--surface); padding: 50px; border-radius: 20px; border: 1px solid var(--border); width: 400px; text-align: center; box-shadow: var(--shadow); }
 
-        /* Sidebar - Your Original Design */
+        /* Sidebar */
         .sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; }
         .sidebar-header { padding: 40px 30px; }
         .logo-box { display: flex; align-items: center; gap: 15px; font-size: 22px; font-weight: 800; color: var(--accent); }
         
         .nav-group { padding: 10px; flex: 1; }
-        .nav-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; padding: 20px 20px 10px; }
+        .nav-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1.5px; padding: 20px 20px 10px; opacity: 0.5; }
         .nav-item { 
             padding: 14px 20px; margin: 4px 10px; border-radius: 10px; cursor: pointer; 
             color: var(--text2); display: flex; align-items: center; gap: 12px; transition: all 0.3s;
@@ -44,15 +44,11 @@
 
         /* Stats Cards */
         .grid-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-bottom: 40px; }
-        .stat-card { 
-            background: var(--surface); padding: 30px; border-radius: var(--radius); border: 1px solid var(--border);
-            position: relative; overflow: hidden; transition: 0.3s;
-        }
-        .stat-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        .stat-card { background: var(--surface); padding: 30px; border-radius: var(--radius); border: 1px solid var(--border); transition: 0.3s; }
         .stat-card h3 { font-size: 14px; color: var(--text2); margin-bottom: 15px; }
         .stat-card .value { font-size: 32px; font-weight: 700; }
 
-        /* Original Tables & Buttons */
+        /* Tables & UI */
         .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 25px; margin-bottom: 30px; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { padding: 18px; text-align: left; color: var(--text2); font-size: 13px; border-bottom: 2px solid var(--border); }
@@ -61,12 +57,8 @@
         .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .badge-success { background: rgba(62,207,142,0.1); color: var(--green); }
 
-        .btn { 
-            padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; 
-            display: inline-flex; align-items: center; gap: 10px; transition: 0.3s;
-        }
+        .btn { padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; transition: 0.3s; }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 20px rgba(79,142,247,0.4); }
     </style>
 </head>
 <body>
@@ -75,8 +67,7 @@
     <div class="auth-card">
         <div style="font-size: 40px; margin-bottom: 20px;">🏫</div>
         <h2>სკოლა №26</h2>
-        <p style="color: var(--text2); margin-bottom: 30px;">მართვის სისტემა</p>
-        <input type="email" id="u-email" class="auth-input" style="width:100%; padding:15px; margin-bottom:15px; background:var(--surface2); border:1px solid var(--border); color:white; border-radius:10px;" placeholder="ელ-ფოსტა">
+        <input type="email" id="u-email" style="width:100%; padding:15px; margin:15px 0; background:var(--surface2); border:1px solid var(--border); color:white; border-radius:10px;" placeholder="ელ-ფოსტა">
         <input type="password" id="u-pass" style="width:100%; padding:15px; margin-bottom:20px; background:var(--surface2); border:1px solid var(--border); color:white; border-radius:10px;" placeholder="პაროლი">
         <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="handleSignIn()">ავტორიზაცია</button>
         <p id="err" style="color:var(--red); margin-top:15px; font-size:13px;"></p>
@@ -85,9 +76,7 @@
 
 <div id="main-app-content" style="display:none; width:100%;">
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-box"><span>🏫</span> სკოლა №26</div>
-        </div>
+        <div class="sidebar-header"><div class="logo-box"><span>🏫</span> სკოლა №26</div></div>
         <div class="nav-group">
             <div class="nav-label">მთავარი</div>
             <div class="nav-item active" onclick="showView('dashboard')">📊 მიმოხილვა</div>
@@ -95,219 +84,65 @@
             <div class="nav-item" onclick="showView('teachers')">👨‍🏫 მასწავლებლები</div>
             <div class="nav-item" onclick="showView('students')">🎓 მოსწავლეები</div>
             <div class="nav-item" onclick="showView('departments')">🏢 დეპარტამენტები</div>
-            <div class="nav-label">ფინანსები</div>
-            <div class="nav-item" onclick="showView('finance')">💰 ბიუჯეტი</div>
         </div>
         <div style="padding:30px;"><button class="btn" style="width:100%; background:var(--surface3); color:white;" onclick="logout()">🚪 გამოსვლა</button></div>
     </aside>
 
     <main class="main-content">
         <div id="view-dashboard" class="view active">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-                <h1>მართვის პანელი</h1>
-                <div id="current-date" style="color:var(--text2)"></div>
-            </div>
-            <div class="grid-stats">
+            <h1>მიმოხილვა</h1>
+            <div class="grid-stats" style="margin-top:30px;">
                 <div class="stat-card"><h3>მოსწავლეები</h3><div class="value" id="c-s">0</div></div>
                 <div class="stat-card"><h3>მასწავლებლები</h3><div class="value" id="c-t" style="color:var(--green)">0</div></div>
                 <div class="stat-card"><h3>დეპარტამენტი</h3><div class="value" id="c-d" style="color:var(--accent)">0</div></div>
                 <div class="stat-card"><h3>ბიუჯეტი</h3><div class="value" id="c-f">0 ₾</div></div>
             </div>
-            <div class="card">
-                <h3>სკოლის აქტივობა</h3>
-                <div style="height:350px; margin-top:20px;"><canvas id="mainChart"></canvas></div>
-            </div>
+            <div class="card"><h3>აქტივობის გრაფიკი</h3><div style="height:300px; margin-top:20px;"><canvas id="mainChart"></canvas></div></div>
         </div>
 
         <div id="view-teachers" class="view">
-            <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
-                <h1>პერსონალი</h1>
-                <button class="btn btn-primary" onclick="addTeacher()">+ ახალი თანამშრომელი</button>
-            </div>
-            <div class="card">
-                <table class="data-table">
-                    <thead>
-                        <tr><th>სახელი და გვარი</th><th>საგანი</th><th>სტატუსი</th><th>ოთახი</th><th>მოქმედება</th></tr>
-                    </thead>
-                    <tbody id="t-body"></tbody>
-                </table>
-            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:30px;"><h1>პერსონალი</h1><button class="btn btn-primary" onclick="addTeacher()">+ დამატება</button></div>
+            <div class="card"><table class="data-table"><thead><tr><th>სახელი</th><th>საგანი</th><th>ოთახი</th><th>მოქმედება</th></tr></thead><tbody id="t-body"></tbody></table></div>
         </div>
 
         <div id="view-students" class="view">
-            <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
-                <h1>მოსწავლეთა რეესტრი</h1>
-                <button class="btn btn-primary" onclick="addStudent()">+ მოსწავლის დამატება</button>
-            </div>
-            <div class="card">
-                <table class="data-table">
-                    <thead>
-                        <tr><th>მოსწავლე</th><th>კლასი</th><th>სტატუსი</th><th>გადახდა</th><th>მოქმედება</th></tr>
-                    </thead>
-                    <tbody id="s-body"></tbody>
-                </table>
-            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:30px;"><h1>მოსწავლეები</h1><button class="btn btn-primary" onclick="addStudent()">+ დამატება</button></div>
+            <div class="card"><table class="data-table"><thead><tr><th>სახელი</th><th>კლასი</th><th>სტატუსი</th><th>მოქმედება</th></tr></thead><tbody id="s-body"></tbody></table></div>
         </div>
     </main>
 </div>
+
 <script>
-    // === 1. მონაცემების საწყისი ბაზა ===
+    // === CONFIG ===
+    const SUPABASE_URL = 'https://xvgidwsbyofptozwsohf.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2Z2lkd3NieW9mcHRvendzb2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3Mjc4MTEsImV4cCI6MjA5MDMwMzgxMX0.GS2bzmqxsCyFIzIOqfyZki-9AVVp7s3OCBk22TFwszY';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     let students = [], teachers = [], depts = [], payments = [], myChart = null;
 
-    // === 2. სესიის შემოწმება და ავტორიზაცია ===
     window.onload = async () => {
         const { data: { session } } = await _supabase.auth.getSession();
-        if (session) { 
-            showApp(); 
-            await loadCloudData(); 
-        }
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('ka-GE');
+        if (session) { showApp(); await loadCloudData(); }
     };
 
     async function handleSignIn() {
         const email = document.getElementById('u-email').value;
         const pass = document.getElementById('u-pass').value;
         const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
-        if (error) {
-            document.getElementById('err').innerText = "შეცდომა: " + error.message;
-        } else {
-            location.reload();
-        }
+        if (error) document.getElementById('err').innerText = error.message;
+        else location.reload();
     }
 
-    // === 3. CLOUD სინქრონიზაცია (Supabase) ===
     async function loadCloudData() {
-        console.log("მონაცემები იტვირთება...");
-        const { data, error } = await _supabase
-            .from('school_configs')
-            .select('data')
-            .eq('config_name', 'main_data')
-            .maybeSingle();
-
+        const { data } = await _supabase.from('school_configs').select('data').eq('config_name', 'main_data').maybeSingle();
         if (data && data.data) {
-            const d = data.data;
-            students = d.students || [];
-            teachers = d.teachers || [];
-            depts = d.depts || [];
-            payments = d.payments || [];
+            students = data.data.students || [];
+            teachers = data.data.teachers || [];
+            depts = data.data.depts || [];
+            payments = data.data.payments || [];
             renderAll();
         }
     }
 
     async function saveCloudData() {
-        const { error } = await _supabase
-            .from('school_configs')
-            .upsert({ 
-                config_name: 'main_data', 
-                data: { students, teachers, depts, payments } 
-            });
-        if (!error) console.log("Cloud განახლდა ✅");
-    }
-
-    // === 4. ვიზუალიზაცია (Render) ===
-    function renderAll() {
-        // სტატისტიკის განახლება
-        document.getElementById('c-s').innerText = students.length;
-        document.getElementById('c-t').innerText = teachers.length;
-        document.getElementById('c-d').innerText = depts.length;
-        let total = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-        document.getElementById('c-f').innerText = total + " ₾";
-
-        // მასწავლებლების ცხრილი
-        document.getElementById('t-body').innerHTML = teachers.map((t, i) => `
-            <tr>
-                <td><div style="font-weight:600;">${t.name}</div></td>
-                <td>${t.subject}</td>
-                <td><span class="badge" style="background:rgba(79,142,247,0.1); color:var(--accent)">შტატში</span></td>
-                <td>${t.room || 'N/A'}</td>
-                <td><button onclick="delT(${i})" style="background:none; border:none; cursor:pointer;">🗑️</button></td>
-            </tr>
-        `).join('');
-
-        // მოსწავლეების ცხრილი
-        document.getElementById('s-body').innerHTML = students.map((s, i) => `
-            <tr>
-                <td><div style="font-weight:600;">${s.name}</div></td>
-                <td>${s.grade || '-'} კლასი</td>
-                <td><span class="badge badge-success">აქტიური</span></td>
-                <td><span style="color:var(--text2)">გადახდილია</span></td>
-                <td><button onclick="delS(${i})" style="background:none; border:none; cursor:pointer;">🗑️</button></td>
-            </tr>
-        `).join('');
-
-        initChart();
-    }
-
-    // === 5. მართვის ფუნქციები (Actions) ===
-    function addTeacher() {
-        const name = prompt("მასწავლებლის სახელი და გვარი:");
-        const sub = prompt("საგანი:");
-        const room = prompt("ოთახის ნომერი:");
-        if (name && sub) {
-            teachers.push({ name, subject: sub, room: room });
-            saveCloudData();
-            renderAll();
-        }
-    }
-
-    function addStudent() {
-        const name = prompt("მოსწავლის სახელი და გვარი:");
-        const grade = prompt("კლასი:");
-        if (name) {
-            students.push({ name, grade: grade });
-            saveCloudData();
-            renderAll();
-        }
-    }
-
-    function delT(i) { if(confirm('წავშალო თანამშრომელი?')) { teachers.splice(i,1); saveCloudData(); renderAll(); } }
-    function delS(i) { if(confirm('წავშალო მოსწავლე?')) { students.splice(i,1); saveCloudData(); renderAll(); } }
-
-    // === 6. ინტერფეისის მართვა ===
-    function showView(id) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById('view-' + id).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    function initChart() {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        if (myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['იანვარი', 'თებერვალი', 'მარტი', 'აპრილი'],
-                datasets: [{
-                    label: 'მოსწავლეების ზრდა',
-                    data: [students.length - 2, students.length - 1, students.length, students.length],
-                    borderColor: '#4f8ef7',
-                    backgroundColor: 'rgba(79, 142, 247, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { grid: { color: '#2e3352' }, ticks: { color: '#8892b0' } },
-                    x: { grid: { display: false }, ticks: { color: '#8892b0' } }
-                }
-            }
-        });
-    }
-
-    function showApp() {
-        document.getElementById('auth-overlay').style.display = 'none';
-        document.getElementById('main-app-content').style.display = 'flex';
-    }
-
-    async function logout() {
-        await _supabase.auth.signOut();
-        location.reload();
-    }
-</script>
-</body>
-</html>
+        await _supabase.from('school_configs').upsert({ config_name
