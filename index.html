@@ -94,4 +94,74 @@ body{font-family:'Noto Sans Georgian',sans-serif;background:var(--bg);color:var(
 </div>
 
 <script>
-//
+// Supabase კონფიგურაცია
+const SUPABASE_URL = 'https://xvgidwsbyofptozwsohf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // შენი გასაღები
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// მონაცემების სტრუქტურა (შენი ორიგინალიდან)
+let departments = [], students = [], teachers = [], payments = [];
+
+window.onload = async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (session) { 
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        await loadData(); 
+    }
+};
+
+async function handleSignIn() {
+    const email = document.getElementById('u-email').value;
+    const pass = document.getElementById('u-pass').value;
+    const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) document.getElementById('err').innerText = "შეცდომა!";
+    else location.reload();
+}
+
+async function loadData() {
+    const { data } = await _supabase.from('school_configs').select('data').eq('config_name', 'main_system_data').maybeSingle();
+    if (data && data.data) {
+        departments = data.data.departments || [];
+        students = data.data.students || [];
+        teachers = data.data.teachers || [];
+        payments = data.data.payments || [];
+    }
+    renderUI();
+}
+
+async function saveData() {
+    await _supabase.from('school_configs').upsert({ 
+        config_name: 'main_system_data', 
+        data: { departments, students, teachers, payments } 
+    });
+}
+
+function renderUI() {
+    // აქ იწყება შენი ორიგინალი Render ლოგიკა
+    const statsHtml = `
+        <div class="stat-card"><div class="stat-label">მოსწავლე</div><div class="stat-value">${students.length}</div></div>
+        <div class="stat-card"><div class="stat-label">განყოფილება</div><div class="stat-value">${departments.length}</div></div>
+    `;
+    document.getElementById('dashStats').innerHTML = statsHtml;
+    
+    // განყოფილებების ბარათები
+    document.getElementById('deptCards').innerHTML = departments.map(d => `
+        <div class="dept-card" style="border-bottom: 4px solid ${d.color}">
+            <div class="dept-icon">${d.icon}</div>
+            <div class="dept-name">${d.name}</div>
+        </div>
+    `).join('');
+}
+
+function showView(viewId, el) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+}
+
+async function logout() { await _supabase.auth.signOut(); location.reload(); }
+</script>
+</body>
+</html>
